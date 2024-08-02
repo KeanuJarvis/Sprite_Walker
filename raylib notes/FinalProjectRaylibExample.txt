@@ -1,0 +1,107 @@
+#include <raylib.h>
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
+//DO NOT DO THIS EVER
+static float DeltaTime = 0;
+
+struct Player
+{
+private:
+	Rectangle source;
+	int currentFrame;
+	int frameWidth;
+	float frameTimer = 0;
+
+	const inline static float FrameTimeInSeconds = 0.1f; //animation speed
+
+public:
+	Vector2 position;
+	Texture2D texture;
+
+ 
+	Player(const Vector2& position, const string& textureFilePath)
+	{
+		this->position = position;
+		texture = LoadTexture(textureFilePath.c_str());
+		currentFrame = 0;
+		frameWidth = texture.width / 8;
+		source = Rectangle(frameWidth * currentFrame, 0, frameWidth, texture.height);
+	}
+
+	void Draw()
+	{
+
+		//The source.x is referring to the left corner of the starting point on where we are going to draw the texture from
+		source.x = frameWidth * currentFrame;
+
+		//Draw The texture according to the source rectangle
+		DrawTextureRec(texture, source, position, WHITE);
+
+		frameTimer += DeltaTime;
+		//Increase our current Animation Frame by one
+		if (frameTimer > FrameTimeInSeconds)
+		{
+			++currentFrame;
+			frameTimer = 0;
+		}
+			
+
+		//Will Reset the currentframe back to zero once we have reached the final frame in our sprite sheet 
+		if (currentFrame > 8) 
+			currentFrame = 0;
+	}
+
+	~Player()
+	{
+		UnloadTexture(texture);
+	}
+};
+
+int main()
+{
+	const int windowWidth = 1920; 
+	const int windowHeight = 1080;
+
+	const string title = "Learning Raylib";
+	const Color BGColor = BLACK;
+
+	
+	InitWindow(windowWidth, windowHeight, title.c_str()); //This creates a window
+	int targetFPS = GetMonitorRefreshRate(GetCurrentMonitor()); // Gets the refresh rate of the monitor the app is launched on
+	SetTargetFPS(targetFPS); //Sets the refreshrate of the window to the int provided 
+	SetExitKey(KEY_NULL);  //Make it so the window can not be closed by a keyboard button
+
+
+	Player player(Vector2(50, 50), "Sprites/Player.png"); //Making a player with the constructor
+
+
+	/*Vector2 position1 = {windowWidth / 2, windowHeight / 2};
+	Vector2 position2;
+	position2.x = windowWidth / 2;
+	position2.y = windowHeight / 2;*/
+
+
+	//Main Game Loop
+	while (WindowShouldClose() == false)
+	{
+		DeltaTime = GetFrameTime();
+		//One Frame
+		{
+			BeginDrawing();
+			ClearBackground(BGColor);
+
+			player.Draw();
+
+			EndDrawing();
+		}
+	}
+		
+
+	CloseWindow();
+
+	return 0;
+}

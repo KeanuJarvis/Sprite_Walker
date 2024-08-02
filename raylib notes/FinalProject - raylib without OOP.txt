@@ -1,0 +1,84 @@
+#include "raylib.h" 
+#include <iostream> 
+
+int main()
+{
+	// Initialization 
+	//--------------------------------------------------------------------------------
+
+	int currentFrame = 0;	// Initializes currentFrame at 0
+	// This makes the waiting animation possible 
+	int framesCounter = 0;	// Initializes framesCounter at 0
+	int framesSpeed = 8;		// Number of spritesheet frames shown by second - aka speed of Stanley
+
+	const int screenWidth = 1920;	// Screen width 
+	const int screenHeight = 1080; 	// Screen height 
+
+	int StanleyX = 750.0f;	// Location of Stanley when screen loads on x-axis (left and right) - 750 pixels from left 
+	int StanleyY = 300.0f;	// Location of Stanley when screen loads on y-axis (up and down) - 300 pixels from the top 
+	int moveX = 7;	// Speed of which Stanley moves on the x-axis 
+
+	InitWindow(screenWidth, screenHeight, "C++ Programming Final Project - Stanley Sprite");
+	InitAudioDevice();  // Initializes sound 
+	Vector2 position = { StanleyX, StanleyY };
+	Texture2D Stanley = LoadTexture("Sprites/Stanley.png");	// Name must match file name of spritesheet - Path directory 
+	Sound sound = LoadSound("Sounds/Footsteps.mp3"); // Loads sound into program 
+
+	// Only iterates between two locations while hiding the other three sprites on the screen 
+	Rectangle frameRec = { 0.0f, 0.0f, (float)Stanley.width / 5, (float)Stanley.height };
+
+	SetTargetFPS(60);	// Sets game to run at 60 frames-per-second 
+	//--------------------------------------------------------------------------------
+	// Game loop 
+	while (!WindowShouldClose())	// Detect window close button or ESC key 
+	{
+	// This makes the walking animation possible 
+		framesCounter++; 
+		if (IsKeyDown(KEY_RIGHT))	// If right key is pressed then Stanley moves right
+		{
+			position.x += moveX; 
+			if (framesCounter >= (60 / framesSpeed))
+			{
+				framesCounter = 0; 
+				currentFrame++; 
+
+				if (currentFrame > 1) currentFrame = 0;	// Switches between sprite 0 and sprite 1
+
+				// This hides the other frames in the animation so that the walking looks natural
+				frameRec.x = (float)currentFrame * (float)Stanley.width / 5; 
+				PlaySound(sound); 
+			}
+		}
+		if (IsKeyDown(KEY_LEFT)) 	// If left key is pressed then Stanley moves left
+		{ 
+			position.x -= moveX;
+			if (framesCounter >= (60 / framesSpeed))
+			{
+				framesCounter = 0;
+				currentFrame++;
+
+				if (currentFrame > 3) currentFrame = 2;	 // Switches between sprite 2 and sprite 3
+
+				// This hides the other frames in the animation so that the walking would look natural
+				frameRec.x = (float)currentFrame * (float)Stanley.width / 5;
+				PlaySound(sound);
+			}
+		}
+		BeginDrawing(); 
+
+		ClearBackground(RAYWHITE);	// Removes the flickering effect of sprite and makes screen consistently white
+
+		DrawTextureRec(Stanley, frameRec, position, WHITE);	 // WHITE means that Stanley will appear as transparent 
+
+		EndDrawing(); 
+		//-----------------------------------------------------------------------------
+	}
+	// De-Initialization 
+	//---------------------------------------------------------------------------------
+	UnloadTexture(Stanley);	 // Texture unloading 
+	UnloadSound(sound); 
+
+	CloseWindow();  // Close window and OpenGL context 
+	//---------------------------------------------------------------------------------
+	return 0; 
+}
